@@ -23,7 +23,10 @@ app.post('/test', (req, res) => {
 
 //user routes
 import userRoutes from './routes/userRoutes';
+import goalRoutes from './routes/goalRoutes';
+
 app.use('/user',userRoutes);
+app.use('/goal',goalRoutes);
 
 const port= process.env.PORT || '5000';
 app.listen(port, () => console.log(`Running on port ${port}`))

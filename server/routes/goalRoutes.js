@@ -1,16 +1,15 @@
 "use strict";
 const express = require('express');
 const router = express.Router();
-const userCollection_1 = require("../database/Schema/userCollection");
-const UserSchema = new userCollection_1.userCollection();
+const goalCollection_1 = require("../database/Schema/goalCollection");
+const GoalCollection = new goalCollection_1.goalCollection();
 router.get('/', async (req, res) => {
-    const response = await UserSchema.find({});
-    console.log(response);
+    const response = await GoalCollection.find({});
     res.status(200).json(response);
 });
 router.post('/', async (req, res) => {
-    const newUser = req.body;
-    const response = await UserSchema.insertNewUser(newUser);
+    const newGoal = req.body;
+    const response = await GoalCollection.insert([newGoal]);
     res.status(200).json(response);
 });
 router.put('/', (req, res) => {

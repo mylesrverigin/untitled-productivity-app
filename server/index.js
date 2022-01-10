@@ -24,6 +24,8 @@ app.post('/test', (req, res) => {
 //
 //user routes
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
+const goalRoutes_1 = __importDefault(require("./routes/goalRoutes"));
 app.use('/user', userRoutes_1.default);
+app.use('/goal', goalRoutes_1.default);
 const port = process.env.PORT || '5000';
 app.listen(port, () => console.log(`Running on port ${port}`));
