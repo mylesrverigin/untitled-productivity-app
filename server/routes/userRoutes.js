@@ -5,7 +5,11 @@ const userCollection_1 = require("../database/Schema/userCollection");
 const UserSchema = new userCollection_1.userCollection();
 router.get('/', async (req, res) => {
     const response = await UserSchema.find({});
-    console.log(response);
+    res.status(200).json(response);
+});
+router.get('/:id', async (req, res) => {
+    const id = req.params.id;
+    const response = await UserSchema.findById(id);
     res.status(200).json(response);
 });
 router.post('/', async (req, res) => {
@@ -13,7 +17,9 @@ router.post('/', async (req, res) => {
     const response = await UserSchema.insertNewUser(newUser);
     res.status(200).json(response);
 });
-router.put('/', (req, res) => {
-    res.status(200).json('put works');
+router.put('/', async (req, res) => {
+    const updatedUser = req.body;
+    const response = await UserSchema.updateUser(updatedUser);
+    res.status(200).json(response);
 });
 module.exports = router;

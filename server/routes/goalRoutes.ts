@@ -11,6 +11,12 @@ router.get('/',async (req:any,res:any)=>{
     res.status(200).json(response);
 })
 
+router.get('/:id',async (req:any,res:any)=>{
+    const id = req.params.id;
+    const response:databaseResponse = await GoalCollection.findById(id);
+    res.status(200).json(response);
+})
+
 router.post('/',async (req:any,res:any)=>{
     const newGoal = req.body;
     const response:databaseResponse = await GoalCollection.insert([newGoal]);

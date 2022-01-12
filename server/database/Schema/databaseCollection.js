@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseCollection = void 0;
 const databaseConnection_1 = __importDefault(require("../databaseConnection"));
 const errors_1 = __importDefault(require("../../constants/errors"));
+const mongodb_1 = require("mongodb");
 class DatabaseCollection {
     databaseConnection;
     schema;
@@ -26,8 +27,9 @@ class DatabaseCollection {
             try {
                 const validatedData = this.validateRequiredFieldsandDefaults(data);
                 const dbResponse = await this.databaseConnection.insertMany(validatedData, { ordered: true });
-                // add id to records for return
-                console.log(dbResponse);
+                const insertedIdsMap = dbResponse['insertedIds'];
+                this.attachIds(insertedIdsMap, validatedData);
+                this.stripDataForExport(validatedData);
                 response.data = validatedData;
             }
             catch (e) {
@@ -46,7 +48,27 @@ class DatabaseCollection {
         return new Promise(async (resolve, reject) => {
             try {
                 let dataArray = await this.databaseConnection.find(query).toArray();
-                dataArray = this.stripDataForExport(dataArray);
+                this.stripDataForExport(dataArray);
+                response.data = dataArray;
+            }
+            catch (e) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        });
+    };
+    findById = (id) => {
+        let response = {
+            status: true,
+            msg: '',
+            data: []
+        };
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = { _id: new mongodb_1.ObjectId(id) };
+                let dataArray = await this.databaseConnection.find(query).toArray();
+                this.stripDataForExport(dataArray);
                 response.data = dataArray;
             }
             catch (e) {
@@ -57,8 +79,56 @@ class DatabaseCollection {
         });
     };
     update = (data) => {
+        let response = {
+            status: true,
+            msg: '',
+            data: []
+        };
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!data['_id']) {
+                    throw errors_1.default.MISSING_ID;
+                }
+                this.stripDataForInsert([data]);
+                const extractedId = this.stripId(data);
+                let dbResponse = await this.databaseConnection.updateOne({ _id: extractedId }, { $set: { ...data } }, { upsert: false });
+                if (dbResponse.modifiedCount !== 1) {
+                    throw errors_1.default.UPDATE_FAILED;
+                }
+                this.stripDataForExport([data]);
+                response.data = [{ ...data, _id: extractedId }];
+            }
+            catch (e) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        });
     };
     delete = (data) => {
+        // todo bulkify
+        let response = {
+            status: true,
+            msg: '',
+            data: []
+        };
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!data._id) {
+                    throw errors_1.default.MISSING_ID;
+                }
+                const query = { _id: new mongodb_1.ObjectId(data._id) };
+                const dbResponse = await this.databaseConnection.deleteMany(query);
+                if (dbResponse.deletedCount !== 1) {
+                    throw errors_1.default.DELETE_FAILED;
+                }
+            }
+            catch (e) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        });
     };
     stripDataForInsert = (data) => {
         // deletes any fields not in schema, inplace
@@ -108,6 +178,17 @@ class DatabaseCollection {
             cleanDataArr.push(cleanDataObj);
         });
         return cleanDataArr;
+    };
+    stripId = (data) => {
+        let id = new mongodb_1.ObjectId(data._id);
+        delete data._id;
+        return id;
+    };
+    attachIds = (idMap, data) => {
+        Object.keys(idMap).forEach((key) => {
+            let intValue = parseInt(key);
+            data[intValue]['_id'] = idMap[key];
+        });
     };
 }
 exports.DatabaseCollection = DatabaseCollection;

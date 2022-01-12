@@ -5,6 +5,9 @@ const pwHash_1 = require("../../utils/pwHash");
 const databaseCollection_1 = require("./databaseCollection");
 const collectionName = 'User';
 const userSchema = {
+    '_id': {
+        required: false
+    },
     'username': {
         required: true,
         hidden: false
@@ -21,19 +24,24 @@ const userSchema = {
         required: true,
         default: 0,
         hidden: true
-    }
+    },
 };
 class userCollection extends databaseCollection_1.DatabaseCollection {
     constructor() {
         super(collectionName, userSchema);
     }
     insertNewUser = (newUser) => {
-        newUser['password'] = (0, pwHash_1.hashPw)(newUser['password']);
-        return new Promise(async (resolve, reject) => {
-            const userToInsert = { ...newUser };
-            const dbResponse = await this.insert([userToInsert]);
-            resolve(dbResponse);
-        });
+        this.hashUserPw(newUser);
+        return this.insert([newUser]);
+    };
+    updateUser = (data) => {
+        this.hashUserPw(data);
+        return this.update(data);
+    };
+    hashUserPw = (userData) => {
+        if ('password' in userData) {
+            userData['password'] = (0, pwHash_1.hashPw)(userData['password']);
+        }
     };
 }
 exports.userCollection = userCollection;

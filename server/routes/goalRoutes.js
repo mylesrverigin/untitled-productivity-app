@@ -7,6 +7,11 @@ router.get('/', async (req, res) => {
     const response = await GoalCollection.find({});
     res.status(200).json(response);
 });
+router.get('/:id', async (req, res) => {
+    const id = req.params.id;
+    const response = await GoalCollection.findById(id);
+    res.status(200).json(response);
+});
 router.post('/', async (req, res) => {
     const newGoal = req.body;
     const response = await GoalCollection.insert([newGoal]);

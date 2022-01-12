@@ -6,7 +6,12 @@ const UserSchema = new userCollection();
 
 router.get('/',async (req:any,res:any)=>{
     const response = await UserSchema.find({});
-    console.log(response);
+    res.status(200).json(response);
+})
+
+router.get('/:id',async (req:any,res:any)=>{
+    const id = req.params.id;
+    const response = await UserSchema.findById(id);
     res.status(200).json(response);
 })
 
@@ -16,8 +21,10 @@ router.post('/',async (req:any,res:any)=>{
     res.status(200).json(response)
 })
 
-router.put('/',(req:any,res:any)=>{
-    res.status(200).json('put works')
+router.put('/',async (req:any,res:any)=>{
+    const updatedUser = req.body;
+    const response = await UserSchema.updateUser(updatedUser);
+    res.status(200).json(response)
 })
 
 export = router;

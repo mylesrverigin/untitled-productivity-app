@@ -1,5 +1,6 @@
 import createConnection from '../databaseConnection';
 import errors from '../../constants/errors';
+import  { ObjectId } from 'mongodb';
 
 interface fieldProperties {
     required?:boolean,
@@ -40,8 +41,9 @@ export class DatabaseCollection {
             try {
                 const validatedData = this.validateRequiredFieldsandDefaults(data);
                 const dbResponse = await this.databaseConnection.insertMany(validatedData,{ordered:true});
-                // add id to records for return
-                console.log(dbResponse);
+                const insertedIdsMap = dbResponse['insertedIds']
+                this.attachIds(insertedIdsMap,validatedData)
+                this.stripDataForExport(validatedData);
                 response.data = validatedData;
             } catch (e:any) {
                 response.status = false;
@@ -60,7 +62,7 @@ export class DatabaseCollection {
         return new Promise(async (resolve,reject)=>{
             try {
                 let dataArray:data[] = await this.databaseConnection.find(query).toArray();
-                dataArray = this.stripDataForExport(dataArray);
+                this.stripDataForExport(dataArray);
                 response.data = dataArray;
             } catch (e:any) {
                 response.status = false;
@@ -70,12 +72,72 @@ export class DatabaseCollection {
         })
     }
 
-    update = (data:data[]) => {
-
+    findById = (id:string):Promise<any> => {
+        let response:databaseResponse = {
+            status : true,
+            msg : '',
+            data : []
+        }
+        return new Promise( async (resolve,reject)=>{
+            try {
+                const query = {_id : new ObjectId(id)};
+                let dataArray:data[] = await this.databaseConnection.find(query).toArray();
+                this.stripDataForExport(dataArray);
+                response.data = dataArray;
+            } catch (e:any) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        })
     }
 
-    delete = (data:data[]) => {
+    update = (data:data):Promise<any> => {
+        let response:databaseResponse = {
+            status : true,
+            msg : '',
+            data : []
+        }
+        return new Promise( async (resolve,reject)=>{
+            try {
+                if (!data['_id']){ throw errors.MISSING_ID}
+                this.stripDataForInsert([data]);
+                const extractedId = this.stripId(data);
 
+                let dbResponse = await this.databaseConnection.updateOne({_id:extractedId},{$set:{ ...data}},{upsert:false});
+                if (dbResponse.modifiedCount !== 1) { throw errors.UPDATE_FAILED }
+                
+                this.stripDataForExport([data]);
+                response.data = [{...data,_id:extractedId}];
+            } catch (e:any) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        })
+    }
+
+    delete = (data:data):Promise<any> => {
+        // todo bulkify
+        let response:databaseResponse = {
+            status : true,
+            msg : '',
+            data : []
+        }
+        return new Promise(async (resolve,reject)=>{
+            try {
+                if (!data._id){ throw errors.MISSING_ID}
+                const query = {_id: new ObjectId(data._id)}
+                const dbResponse = await this.databaseConnection.deleteMany(query);
+                if (dbResponse.deletedCount !== 1){
+                    throw errors.DELETE_FAILED
+                }
+            } catch (e:any) {
+                response.status = false;
+                response.msg = e;
+            }
+            resolve(response);
+        })
     }
 
     stripDataForInsert = (data:data[]):data[] => {
@@ -125,6 +187,19 @@ export class DatabaseCollection {
             cleanDataArr.push(cleanDataObj);
         })
         return cleanDataArr;
+    }
+
+    stripId = (data:data) => {
+        let id = new ObjectId(data._id);
+        delete data._id
+        return id;
+    }
+
+    attachIds = (idMap:Record<string,ObjectId>,data:data[]):void => {
+        Object.keys(idMap).forEach((key:string)=>{
+            let intValue = parseInt(key);
+            data[intValue]['_id'] = idMap[key];
+        })
     }
 
 }
