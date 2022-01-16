@@ -1,4 +1,4 @@
-import { inputDetails } from "./inputField"
+import { inputDetails } from "./inputForm"
 
 export default function InputCheckbox(info:inputDetails) {
     let {name,label,className,value,onclick,onchange} = info;

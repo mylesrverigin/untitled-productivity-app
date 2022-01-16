@@ -6,6 +6,9 @@ import Home from "./pages/home/home";
 import Signup from "./pages/signup/signup";
 import Login from "./pages/login/login";
 import Navbar from './components/navbar/navbar';
+import env from "react-dotenv";
+import { updateVarMap } from './utils/envVars';
+updateVarMap('BASE_URL',env.BASE_URL);
 
 ReactDOM.render(
   <React.StrictMode>

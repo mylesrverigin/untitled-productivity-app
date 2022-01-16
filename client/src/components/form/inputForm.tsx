@@ -1,31 +1,27 @@
-import InputField, {inputDetails} from "./inputField";
+import InputField from "./inputField";
 import InputCheckbox from "./inputCheckbox";
 
-export default function inputForm() {
-    let inputs:inputDetails = {
-        type:'checkbox',
-        name:'test',
-        className:'test',
-        value:'true',
-        onclick:(evt:any)=>{console.log(evt.target.value)},
-        onchange:(evt:any)=>{console.log('change')}
-    }
+export interface inputDetails {
+    type:string,
+    name:string,
+    label?:string,
+    className:string,
+    value?:any
+    placeholder?:string
+    onclick:Function,
+    onchange:Function
+}
 
-    let inputs2:inputDetails = {
-        type:'checkbox',
-        name:'test',
-        label:'one',
-        className:'test',
-        value:true,
-        onclick:(evt:any)=>{console.log(evt.target.value)},
-        onchange:(evt:any)=>{console.log('change')}
-    }
+export default function inputForm(props: {formData: inputDetails[],baseClass:string}) {
+    const {formData,baseClass} = props;
 
     return (
         <div>
-            form
-            <InputField {...inputs}/>
-            <InputCheckbox {...inputs2}/>
+            <form className={`${baseClass}-form`}>
+            {formData.map((formField)=>{
+                return formField.type === 'checkbox'? <InputCheckbox {...formField}/> : <InputField {...formField}/>
+                })}
+            </form>
         </div>
     )
 }

@@ -53,7 +53,7 @@ export class DatabaseCollection {
         })
     }
     
-    find = (query:query):Promise<any> => {
+    find = (query:query,strip=true):Promise<any> => {
         let response:databaseResponse = {
             status : true,
             msg : '',
@@ -62,7 +62,9 @@ export class DatabaseCollection {
         return new Promise(async (resolve,reject)=>{
             try {
                 let dataArray:data[] = await this.databaseConnection.find(query).toArray();
-                this.stripDataForExport(dataArray);
+                if (strip) {
+                    this.stripDataForExport(dataArray);
+                }
                 response.data = dataArray;
             } catch (e:any) {
                 response.status = false;

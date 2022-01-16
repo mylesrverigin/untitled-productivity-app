@@ -26,7 +26,6 @@ const userSchema: Record<string,Record<string,any>> = {
         default:0,
         hidden:true
     },
-    
 }
 
 export class userCollection extends DatabaseCollection {

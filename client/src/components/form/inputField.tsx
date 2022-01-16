@@ -1,13 +1,4 @@
-export interface inputDetails {
-    type:string,
-    name:string,
-    label?:string,
-    className:string,
-    value?:any
-    placeholder?:string
-    onclick:Function,
-    onchange:Function
-}
+import { inputDetails } from "./inputForm";
 
 export default function InputField(info:inputDetails) {
     let {type,name,label,className,value,placeholder,onclick,onchange} = info;

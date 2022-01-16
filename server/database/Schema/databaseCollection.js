@@ -39,7 +39,7 @@ class DatabaseCollection {
             resolve(response);
         });
     };
-    find = (query) => {
+    find = (query, strip = true) => {
         let response = {
             status: true,
             msg: '',
@@ -48,7 +48,9 @@ class DatabaseCollection {
         return new Promise(async (resolve, reject) => {
             try {
                 let dataArray = await this.databaseConnection.find(query).toArray();
-                this.stripDataForExport(dataArray);
+                if (strip) {
+                    this.stripDataForExport(dataArray);
+                }
                 response.data = dataArray;
             }
             catch (e) {
