@@ -38,12 +38,10 @@ const sendApiRequest = (method:string,endpoint:string,data:Record<any,any>):Reco
         // @ts-ignore
         requestCreator(method,endpoint,data)
         .then((res)=>{
-            console.log('res');
-            resolve(res);
+            resolve(res.data);
         })
         .catch((err)=>{
-            console.log('err');
-            resolve(err);
+            resolve(err.response.data);
         })
     })
 }

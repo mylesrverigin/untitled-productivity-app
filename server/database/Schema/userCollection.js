@@ -32,7 +32,7 @@ class userCollection extends databaseCollection_1.DatabaseCollection {
     }
     insertNewUser = (newUser) => {
         this.hashUserPw(newUser);
-        return this.insert([newUser]);
+        return this.insert([newUser], false);
     };
     updateUser = (data) => {
         this.hashUserPw(data);

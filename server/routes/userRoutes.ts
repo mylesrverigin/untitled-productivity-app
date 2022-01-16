@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 import {userCollection} from '../database/Schema/userCollection';
+import { databaseResponse } from '../database/Schema/databaseCollection';
 import { compareHash } from '../utils/pwHash';
+import errors from '../constants/errors';
+import { createAuthToken } from '../utils/jwtUtil';
 
 const UserSchema = new userCollection();
 
@@ -17,23 +20,76 @@ router.get('/:id',async (req:any,res:any)=>{
 })
 
 router.post('/login',async (req:any,res:any)=>{
+    let response:databaseResponse = {
+        status : false,
+        msg : '',
+        data : []
+    }
+
     const loginInfo = req.body;
-    console.log(loginInfo);
-    let response = await UserSchema.find({username:loginInfo.username},false);
-    if (!response.status || response.data.length === 0) {
-        response.msg = 'no user found'
+    if (!loginInfo.username || !loginInfo.password) {
+        response.msg = errors.NO_USER_PASSWORD
+        return res.status(403).json(response);
+    }
+    
+    let serverResponse = await UserSchema.find({username:loginInfo.username},false);
+    if (!serverResponse.status || serverResponse.data.length === 0) {
+        response.msg = errors.DATA_NOT_FOUND;
         return res.status(404).json(response)
     }
-    const passwordMatch = compareHash(loginInfo.password,response.data[0].password)
-    console.log(response);
-    // todo generic response
-    res.status(200).json(response)
+
+    const passwordMatch = compareHash(loginInfo.password,serverResponse.data[0].password)
+    if ( !passwordMatch) {
+        response.msg = errors.PASSWORD_INCORRECT;
+        return res.status(403).json(response);
+    }
+
+    let userData = serverResponse.data[0];
+    let token = createAuthToken({id:userData._id,version:userData.refreshversion})
+    if (!token) {
+        response.msg = errors.CREATE_TOKEN_ERROR
+        return res.status(500).json(response);
+    }
+
+    response.status = true;
+    response.data = [{token:token,username:userData.username}]
+    return res.status(200).json(response)
 })
 
 router.post('/',async (req:any,res:any)=>{
+    let response:databaseResponse = {
+        status : false,
+        msg : '',
+        data : []
+    }
+    
     const newUser = req.body;
-    const response = await UserSchema.insertNewUser(newUser);
-    res.status(200).json(response)
+    if (!newUser.username || !newUser.password || !newUser.passwordConfirm) {
+        response.msg = errors.NO_USER_PASSWORD
+        return res.status(403).json(response);
+    }
+
+    if ( newUser.password !== newUser.passwordConfirm) {
+        response.msg = errors.PASSWORDS_NO_MATCH;
+        return res.status(403).json(response);
+    }
+    
+    const serverResponse = await UserSchema.insertNewUser(newUser);
+    if (!serverResponse.status) {
+        response.msg = serverResponse.msg;
+        return res.status(403).json(response);
+    }
+
+    let userData = serverResponse.data[0];
+    let token = createAuthToken({id:userData._id,version:userData.refreshversion})
+    if (!token) {
+        response.msg = errors.CREATE_TOKEN_ERROR
+        return res.status(500).json(response);
+    }
+
+    response.status = true;
+    response.data = [{token:token,username:userData.username}]
+    return res.status(200).json(response)
 })
 
 router.put('/',async (req:any,res:any)=>{

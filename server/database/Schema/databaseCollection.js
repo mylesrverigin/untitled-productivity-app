@@ -17,7 +17,7 @@ class DatabaseCollection {
     createDataBaseConnection = async (collectionName) => {
         this.databaseConnection = await (0, databaseConnection_1.default)(collectionName);
     };
-    insert = (data) => {
+    insert = (data, strip = true) => {
         let response = {
             status: true,
             msg: '',
@@ -29,7 +29,9 @@ class DatabaseCollection {
                 const dbResponse = await this.databaseConnection.insertMany(validatedData, { ordered: true });
                 const insertedIdsMap = dbResponse['insertedIds'];
                 this.attachIds(insertedIdsMap, validatedData);
-                this.stripDataForExport(validatedData);
+                if (strip) {
+                    this.stripDataForExport(validatedData);
+                }
                 response.data = validatedData;
             }
             catch (e) {
@@ -60,7 +62,7 @@ class DatabaseCollection {
             resolve(response);
         });
     };
-    findById = (id) => {
+    findById = (id, strip = true) => {
         let response = {
             status: true,
             msg: '',
@@ -70,7 +72,9 @@ class DatabaseCollection {
             try {
                 const query = { _id: new mongodb_1.ObjectId(id) };
                 let dataArray = await this.databaseConnection.find(query).toArray();
-                this.stripDataForExport(dataArray);
+                if (strip) {
+                    this.stripDataForExport(dataArray);
+                }
                 response.data = dataArray;
             }
             catch (e) {

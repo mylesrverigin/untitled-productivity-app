@@ -1,5 +1,6 @@
 import InputForm,{inputDetails} from "../../components/form/inputForm"
 import { extractFormData } from "../../utils/formParsing";
+import { signupUser } from "../../utils/endpointRequests/userEndpoints";
 
 const baseClass = 'signup';
 const formData:inputDetails[] = [
@@ -40,10 +41,11 @@ const formData:inputDetails[] = [
         name:'signup',
         className:baseClass,
         value:'signup',
-        onclick:(evt:any)=>{
+        onclick:async (evt:any)=>{
             evt.preventDefault();
             let formData = extractFormData('signup');
-            console.log(formData);
+            let serverResonse = await signupUser(formData);
+            console.log(serverResonse);
         },
         onchange:(evt:any)=>{}
     },

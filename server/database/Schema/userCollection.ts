@@ -35,7 +35,7 @@ export class userCollection extends DatabaseCollection {
 
     insertNewUser = (newUser:userData):Promise<any> => {
         this.hashUserPw(newUser);
-        return this.insert([newUser])
+        return this.insert([newUser],false)
     }
 
     updateUser = (data:data):Promise<any> => {

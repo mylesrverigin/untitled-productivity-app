@@ -31,7 +31,7 @@ export class DatabaseCollection {
         this.databaseConnection = await createConnection(collectionName);
     }
 
-    insert = (data:data[]):Promise<any> => {
+    insert = (data:data[],strip=true):Promise<any> => {
         let response: databaseResponse = {
             status : true,
             msg : '',
@@ -43,7 +43,9 @@ export class DatabaseCollection {
                 const dbResponse = await this.databaseConnection.insertMany(validatedData,{ordered:true});
                 const insertedIdsMap = dbResponse['insertedIds']
                 this.attachIds(insertedIdsMap,validatedData)
-                this.stripDataForExport(validatedData);
+                if (strip) {
+                    this.stripDataForExport(validatedData);
+                }
                 response.data = validatedData;
             } catch (e:any) {
                 response.status = false;
@@ -74,7 +76,7 @@ export class DatabaseCollection {
         })
     }
 
-    findById = (id:string):Promise<any> => {
+    findById = (id:string,strip=true):Promise<any> => {
         let response:databaseResponse = {
             status : true,
             msg : '',
@@ -84,7 +86,9 @@ export class DatabaseCollection {
             try {
                 const query = {_id : new ObjectId(id)};
                 let dataArray:data[] = await this.databaseConnection.find(query).toArray();
-                this.stripDataForExport(dataArray);
+                if (strip) {
+                    this.stripDataForExport(dataArray);
+                }
                 response.data = dataArray;
             } catch (e:any) {
                 response.status = false;

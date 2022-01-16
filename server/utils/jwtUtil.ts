@@ -21,7 +21,7 @@ const createRefreshToken = (data:tokenData):string | null => {
     }
 }
 
-const decodeAuthToken = (token:string):string | null => {
+const decodeAuthToken = (token:string):tokenData | null => {
     try {
         return jwt.verify(token, process.env.SECRET_KEY_AUTH);
     }catch {
@@ -29,7 +29,7 @@ const decodeAuthToken = (token:string):string | null => {
     }
 }
 
-const decodeRefreshToken = (token:string) => {
+const decodeRefreshToken = (token:string):tokenData | null => {
     try {
         return jwt.verify(token, process.env.SECRET_KEY_REFRESH);
     }catch {
@@ -37,4 +37,4 @@ const decodeRefreshToken = (token:string) => {
     }
 }
 
-export { createAuthToken, decodeAuthToken, createRefreshToken, decodeRefreshToken};
+export { createAuthToken, decodeAuthToken, createRefreshToken, decodeRefreshToken, tokenData};
