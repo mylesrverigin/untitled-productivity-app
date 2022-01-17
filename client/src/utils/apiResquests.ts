@@ -21,6 +21,7 @@ const setRefreshToken = (token:string) => {
 
 const requestCreator = (requestType:string,endpoint:string,data:Record<any,any>) => {
     const url = `${getEnvVars()['BASE_URL']}${endpoint}`;
+    console.log('request to',url);
     switch (requestType) {
         case 'POST':
             return axios.post(url,data,{headers:createHeader()});
