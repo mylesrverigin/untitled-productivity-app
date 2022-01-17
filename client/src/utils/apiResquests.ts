@@ -28,6 +28,8 @@ const requestCreator = (requestType:string,endpoint:string,data:Record<any,any>)
             return axios.get(url,{headers:createHeader()});
         case 'PUT':
             return axios.put(url,data,{headers:createHeader()});
+        case 'DELETE':
+            return axios.delete(url+`/${data._id}`,{headers:createHeader()})
         default:
             break;
     }

@@ -18,8 +18,8 @@ export default function inputForm(props: {formData: inputDetails[],baseClass:str
     return (
         <div>
             <form className={`${baseClass}-form`}>
-            {formData.map((formField)=>{
-                return formField.type === 'checkbox'? <InputCheckbox {...formField}/> : <InputField {...formField}/>
+            {formData.map((formField,idx)=>{
+                return formField.type === 'checkbox'? <InputCheckbox key={baseClass+idx} {...formField}/> : <InputField key={baseClass+idx} {...formField}/>
                 })}
             </form>
         </div>

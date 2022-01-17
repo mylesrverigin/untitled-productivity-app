@@ -1,9 +1,11 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertId = void 0;
 const mongodb_1 = require("mongodb");
 const mongoUri = process.env.MONGO_CONNECTION || '';
 const dbName = process.env.DB_NAME || '';
 const client = new mongodb_1.MongoClient(mongoUri);
-const createDatabaseConnection = async (collectionName) => {
+exports.default = async (collectionName) => {
     try {
         await client.connect();
         const database = client.db(dbName);
@@ -13,4 +15,7 @@ const createDatabaseConnection = async (collectionName) => {
         console.log('error connecting to DB ', e);
     }
 };
-module.exports = createDatabaseConnection;
+const convertId = (id) => {
+    return new mongodb_1.ObjectId(id);
+};
+exports.convertId = convertId;

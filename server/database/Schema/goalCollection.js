@@ -4,6 +4,7 @@ exports.goalCollection = void 0;
 const databaseCollection_1 = require("./databaseCollection");
 const collectionName = 'Goal';
 const goalSchema = {
+    '_id': {},
     'name': {
         required: true
     },

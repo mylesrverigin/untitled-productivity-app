@@ -1,10 +1,10 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
 
 const mongoUri:string = process.env.MONGO_CONNECTION || '';
 const dbName:string = process.env.DB_NAME || '';
 const client = new MongoClient(mongoUri);
 
-const createDatabaseConnection = async (collectionName:string) => {
+export default async (collectionName:string) => {
     try {
         await client.connect();
         const database = client.db(dbName);
@@ -14,4 +14,6 @@ const createDatabaseConnection = async (collectionName:string) => {
     }
 }
 
-export = createDatabaseConnection;
+export const convertId = (id:string):ObjectId => {
+    return new ObjectId(id);
+}

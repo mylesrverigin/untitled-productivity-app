@@ -3,6 +3,8 @@ import {DatabaseCollection} from './databaseCollection';
 const collectionName:string = 'Goal';
 
 const goalSchema: Record<string,Record<string,any>> = {
+    '_id': {
+    },
     'name':{
         required:true
     },

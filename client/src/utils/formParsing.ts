@@ -6,7 +6,11 @@ export const extractFormData = (className:string) => {
 
     formInputs.forEach((el:any)=>{
         if (el.type !== 'button') {
-            formData[el.name] = el.value;
+            let value = el.value
+            if (el.type === 'number') {
+                value = parseInt(value);
+            }
+            formData[el.name] = value;
         }
     })
     formCheckboxes.forEach((el:any)=>{
@@ -14,4 +18,24 @@ export const extractFormData = (className:string) => {
     })
 
     return formData;
+}
+
+export const parseDates = (datefields:string[],data:Record<string,any>) => {
+    datefields.forEach((field:string)=>{
+        if (data[field]) {
+            data[field] = new Date(data[field]).getTime();
+        }
+    })
+}
+
+export const verifyFields = (requiredFields:string[],data:Record<string,any>):string[] => {
+    let missingFields:string[] = [];
+
+    requiredFields.forEach((field:string)=>{
+        if (!data[field] || data[field] === null || data[field] === undefined || data[field] === '') {
+            missingFields.push(field)
+        }
+    })
+
+    return missingFields
 }

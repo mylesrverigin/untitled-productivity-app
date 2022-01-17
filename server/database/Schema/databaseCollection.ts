@@ -108,11 +108,9 @@ export class DatabaseCollection {
             try {
                 if (!data['_id']){ throw errors.MISSING_ID}
                 this.stripDataForInsert([data]);
-                const extractedId = this.stripId(data);
-
-                let dbResponse = await this.databaseConnection.updateOne({_id:extractedId},{$set:{ ...data}},{upsert:false});
+                const extractedId:ObjectId = this.stripId(data);
+                let dbResponse = await this.databaseConnection.updateOne( {_id:extractedId} ,{$set:{...data}},{upsert:false});
                 if (dbResponse.modifiedCount !== 1) { throw errors.UPDATE_FAILED }
-                
                 this.stripDataForExport([data]);
                 response.data = [{...data,_id:extractedId}];
             } catch (e:any) {
@@ -195,7 +193,7 @@ export class DatabaseCollection {
         return cleanDataArr;
     }
 
-    stripId = (data:data) => {
+    stripId = (data:data):ObjectId => {
         let id = new ObjectId(data._id);
         delete data._id
         return id;
