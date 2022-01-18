@@ -5,6 +5,7 @@ import {goalCollection} from '../database/Schema/goalCollection';
 import { databaseResponse } from '../database/Schema/databaseCollection';
 import errors from '../constants/errors';
 import { convertId } from '../database/databaseConnection';
+import { ObjectId } from 'mongodb';
 
 const GoalCollection = new goalCollection();
 
@@ -61,7 +62,7 @@ router.put('/',async (req:any,res:any)=>{
         msg:'',
         data:[]
     }
-    let {authorized,userId} = req.authorization
+    let {authorized} = req.authorization
     let updatedGoal = req.body;
 
     if (!authorized) {
@@ -71,6 +72,9 @@ router.put('/',async (req:any,res:any)=>{
     if (!updatedGoal) {
         response.msg = errors.NO_DATA_SENT;
         return res.status(403).json(response);
+    }
+    if (updatedGoal.subgoal) {
+        updatedGoal.subgoal = new ObjectId(updatedGoal.subgoal);
     }
     const serverResponse:databaseResponse = await GoalCollection.update(updatedGoal);
     console.log(serverResponse);
@@ -87,7 +91,7 @@ router.delete('/:id',async (req:any,res:any)=>{
         msg:'',
         data:[]
     }
-    let {authorized,userId} = req.authorization
+    let {authorized} = req.authorization
 
     if (!authorized) {
         response.msg = errors.UNAUTHORIZED;

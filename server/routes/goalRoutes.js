@@ -7,6 +7,7 @@ const router = express.Router();
 const goalCollection_1 = require("../database/Schema/goalCollection");
 const errors_1 = __importDefault(require("../constants/errors"));
 const databaseConnection_1 = require("../database/databaseConnection");
+const mongodb_1 = require("mongodb");
 const GoalCollection = new goalCollection_1.goalCollection();
 router.get('/', async (req, res) => {
     let response = {
@@ -55,7 +56,7 @@ router.put('/', async (req, res) => {
         msg: '',
         data: []
     };
-    let { authorized, userId } = req.authorization;
+    let { authorized } = req.authorization;
     let updatedGoal = req.body;
     if (!authorized) {
         response.msg = errors_1.default.UNAUTHORIZED;
@@ -64,6 +65,9 @@ router.put('/', async (req, res) => {
     if (!updatedGoal) {
         response.msg = errors_1.default.NO_DATA_SENT;
         return res.status(403).json(response);
+    }
+    if (updatedGoal.subgoal) {
+        updatedGoal.subgoal = new mongodb_1.ObjectId(updatedGoal.subgoal);
     }
     const serverResponse = await GoalCollection.update(updatedGoal);
     console.log(serverResponse);
@@ -79,7 +83,7 @@ router.delete('/:id', async (req, res) => {
         msg: '',
         data: []
     };
-    let { authorized, userId } = req.authorization;
+    let { authorized } = req.authorization;
     if (!authorized) {
         response.msg = errors_1.default.UNAUTHORIZED;
         return res.status(403).json(response);

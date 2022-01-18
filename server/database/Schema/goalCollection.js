@@ -34,10 +34,10 @@ const goalSchema = {
         required: true,
         hidden: true
     },
-    'subgoal': {
+    'parentGoal': {
         required: false
     },
-    'subhabit': {
+    'parenthabit': {
         required: false
     }
 };

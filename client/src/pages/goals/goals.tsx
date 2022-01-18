@@ -1,111 +1,61 @@
 import {useState,useEffect} from 'react';
-import InputForm,{inputDetails} from "../../components/form/inputForm"
-import { extractFormData,parseDates,verifyFields } from "../../utils/formParsing";
-import { createGoal,getGoals} from "../../utils/endpointRequests/goalEndpoints";
+import InputForm from "../../components/form/inputForm"
+import { getGoals} from "../../utils/endpointRequests/goalEndpoints";
 import ProgressBar,{goalDetails} from "../../components/progressBar/progressBar";
+import createGoalFormProps from '../../utils/formSchema/goalFormSchema'
+import { createMap } from '../../utils/dataShaping';
 
-const requiredFields:Record<string,string> = {
-    'name':'Goal name',
-    'details':'Goal details',
-    'endDate':'Date goal will be completed'
-};
+const nestData = (data:Record<string,any>[]) => {
+    // child goals can't be in a map because it overwrites the key 
+    let parentToDataMap = createMap(data,'parentGoal');
+    let idTodataMap = createMap(data,'_id');
+    let finalMap:Record<string,any> = {}
 
-const handleSubmit = async (evt:Event) => {
-    evt.preventDefault();
-    let formData = extractFormData(baseClass);
-    let missingFields = verifyFields(Object.keys(requiredFields),formData);
-    if (missingFields.length > 0) {
-        console.log('missing',missingFields);
-        return;
+    let parentKeys = Object.keys(parentToDataMap);
+    let normalKeys = Object.keys(idTodataMap)
+    let usedChildKeys:Record<string,null> = {};
+
+    for (let key of parentKeys) {
+        if (key in idTodataMap) {
+            let childNode = parentToDataMap[key];
+            let parentNode = idTodataMap[key];
+            if (!parentNode.subGoal) {
+                parentNode.subGoal = []
+            }
+            usedChildKeys[childNode._id] = null;
+            parentNode.subGoal.push(childNode)
+        }
     }
-    parseDates(['startDate','endDate'],formData)
-    let serverResponse = await createGoal(formData);
+    for (let key of normalKeys) {
+        if (key in usedChildKeys) {
+            continue;
+        }
+        finalMap[key] = idTodataMap[key]
+    }
+    console.log('FINAL',finalMap)
 }
 
-const baseClass = 'goal'
-const formData:inputDetails[] = [
-    {
-        type:'text',
-        name:'name',
-        className:baseClass,
-        placeholder:'Goal name',
-        onclick:(evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'text',
-        name:'details',
-        className:baseClass,
-        placeholder:'Goal details',
-        onclick:(evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'date',
-        name:'startDate',
-        className:baseClass,
-        label:'Start Date',
-        placeholder:'goal start date',
-        onclick: async (evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'date',
-        name:'endDate',
-        className:baseClass,
-        label:'End Date',
-        placeholder:'goal end date',
-        onclick: async (evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'number',
-        name:'progress',
-        className:baseClass,
-        placeholder:'Current goal progress',
-        onclick: async (evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'number',
-        name:'maxProgress',
-        className:baseClass,
-        placeholder:'Max goal progress',
-        onclick: async (evt:any)=>{},
-        onchange:(evt:any)=>{}
-    },
-    {
-        type:'button',
-        name:'Save',
-        className:baseClass,
-        value:'Create Goal',
-        onclick: async (evt:any)=>{handleSubmit(evt)},
-        onchange:(evt:any)=>{}
-    },
-]
 
 const refreshGoals = async (stateUpdate:Function) => {
     let serverResponse = await getGoals();
     if (serverResponse.status && serverResponse.data.length > 0) {
+        nestData(serverResponse.data);
         stateUpdate(serverResponse.data);
     }
 }
 
 export default function Goals() {
+    const [showForm,setShowForm] = useState(false);
+
     const [goalArr, setGoalArr] = useState([]);
     useEffect(()=>{
         refreshGoals(setGoalArr)
     },[])
 
-    let props = {
-        formData:formData,
-        baseClass:baseClass
-    }
-
     return (
         <div>
-            goal
-            <InputForm {...props}/>
+            <button onClick={e=>setShowForm(c=>!c)}> {showForm? 'Cancel':'Create'}</button>
+            { showForm && <InputForm {...createGoalFormProps('base')}/>}
             {goalArr.map((goal:goalDetails)=> <ProgressBar {...goal}/>)}
         </div>
     )

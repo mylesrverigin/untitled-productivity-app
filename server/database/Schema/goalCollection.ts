@@ -34,10 +34,10 @@ const goalSchema: Record<string,Record<string,any>> = {
         required:true,
         hidden:true
     },
-    'subgoal':{
+    'parentGoal':{
         required:false
     },
-    'subhabit':{
+    'parenthabit':{
         required:false
     }
 }

@@ -1,7 +1,10 @@
-import React from 'react'
+import {useState} from 'react'
 import { useProgress } from '../../utils/hooks/useProgress'
 import { deleteGoal } from '../../utils/endpointRequests/goalEndpoints'
 import './progressBar.scss'
+import createGoalFormProps from '../../utils/formSchema/goalFormSchema';
+import InputForm from '../form/inputForm';
+import { createGoal } from '../../utils/endpointRequests/goalEndpoints';
 
 export interface goalDetails {
     name:string,
@@ -35,7 +38,18 @@ const doDelete = (goal:Record<string,any>) => {
 }
 
 export default function ProgressBar(goalInfo:goalDetails) {
+    const [subGoal,setSubGoal] = useState(false);
     const {goalState,setGoalState} = useProgress(goalInfo);
+
+    const formCallout = async (data:Record<string,any>) => {
+        data['parentGoal'] = goalState._id;
+        const serverResponse = await createGoal(data);
+        if (serverResponse.status && serverResponse.data.length > 0) {
+            // setGoalState
+        }
+    }
+
+    const formProps = createGoalFormProps(goalState._id,formCallout);
 
     return (
         <div className='progress-bar'>
@@ -57,7 +71,10 @@ export default function ProgressBar(goalInfo:goalDetails) {
                 <div className='progress-time'
                     style={{width:normalizeDates(goalState.startDate,goalState.endDate)}}></div>
             </div>
-
+            <div className='sub-goal-create'>
+                <button onClick={e=>setSubGoal(c=>!c)}>{subGoal? 'Cancel':'Show'}</button>
+                {subGoal && goalState._id && <InputForm {...formProps}/>}
+            </div>
         </div>
     )
 }
