@@ -6,41 +6,39 @@ import createGoalFormProps from '../../utils/formSchema/goalFormSchema'
 import { createMap } from '../../utils/dataShaping';
 
 const nestData = (data:Record<string,any>[]) => {
-    // child goals can't be in a map because it overwrites the key 
-    let parentToDataMap = createMap(data,'parentGoal');
     let idTodataMap = createMap(data,'_id');
-    let finalMap:Record<string,any> = {}
+    let childKeysSeen:Record<string,null> = {}
+    let finalList:Record<string,any>[] = [];
 
-    let parentKeys = Object.keys(parentToDataMap);
-    let normalKeys = Object.keys(idTodataMap)
-    let usedChildKeys:Record<string,null> = {};
+    let filteredGoals = Object.values(idTodataMap);
 
-    for (let key of parentKeys) {
-        if (key in idTodataMap) {
-            let childNode = parentToDataMap[key];
-            let parentNode = idTodataMap[key];
-            if (!parentNode.subGoal) {
-                parentNode.subGoal = []
+    filteredGoals.forEach((el:Record<string,any>)=>{
+        let parentKey = el['parentGoal'];
+        if ( parentKey && parentKey in idTodataMap) {
+            childKeysSeen[el._id] = null;
+            if (!idTodataMap[parentKey].nested) {
+                idTodataMap[parentKey].nested = [];
             }
-            usedChildKeys[childNode._id] = null;
-            parentNode.subGoal.push(childNode)
+            idTodataMap[parentKey].nested.push(el);
         }
-    }
-    for (let key of normalKeys) {
-        if (key in usedChildKeys) {
-            continue;
+    })
+
+    filteredGoals.forEach((el:Record<string,any>)=>{
+        if ( childKeysSeen[el._id] !== null) {
+            // goal without parent
+            finalList.push(el);
         }
-        finalMap[key] = idTodataMap[key]
-    }
-    console.log('FINAL',finalMap)
+    })
+    return finalList;
+    
 }
 
 
 const refreshGoals = async (stateUpdate:Function) => {
     let serverResponse = await getGoals();
     if (serverResponse.status && serverResponse.data.length > 0) {
-        nestData(serverResponse.data);
-        stateUpdate(serverResponse.data);
+        let nestedGoals = nestData(serverResponse.data);
+        stateUpdate(nestedGoals);
     }
 }
 

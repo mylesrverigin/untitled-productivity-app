@@ -16,7 +16,8 @@ export interface goalDetails {
     progress:number,
     maxProgress:number,
     subgoal?:string,
-    subhabit?:string
+    subhabit?:string,
+    nested?:goalDetails[]
 }
 
 const getWidthPercentage = (a:number,b:number) => {
@@ -38,14 +39,16 @@ const doDelete = (goal:Record<string,any>) => {
 }
 
 export default function ProgressBar(goalInfo:goalDetails) {
-    const [subGoal,setSubGoal] = useState(false);
+    const [createSubGoal,setCreateSubGoal] = useState(false);
     const {goalState,setGoalState} = useProgress(goalInfo);
+    const [toggleSubGoal,setToggleSubGoal] = useState(true);
+    const hasSubGoal = !!goalState.nested;
 
     const formCallout = async (data:Record<string,any>) => {
         data['parentGoal'] = goalState._id;
         const serverResponse = await createGoal(data);
         if (serverResponse.status && serverResponse.data.length > 0) {
-            // setGoalState
+            // setGoalState or refresh page
         }
     }
 
@@ -72,9 +75,13 @@ export default function ProgressBar(goalInfo:goalDetails) {
                     style={{width:normalizeDates(goalState.startDate,goalState.endDate)}}></div>
             </div>
             <div className='sub-goal-create'>
-                <button onClick={e=>setSubGoal(c=>!c)}>{subGoal? 'Cancel':'Show'}</button>
-                {subGoal && goalState._id && <InputForm {...formProps}/>}
+                <button onClick={e=>setCreateSubGoal(c=>!c)}>{createSubGoal? 'Cancel':'Show'}</button>
+                {createSubGoal && goalState._id && <InputForm {...formProps}/>}
             </div>
+            {hasSubGoal && <div className='sub-goal-display'>
+                <button onClick={e=>setToggleSubGoal(c=>!c)}>{toggleSubGoal? 'Hide':'Show'}</button>
+                {toggleSubGoal && goalState.nested?.map((el:goalDetails)=><ProgressBar {...el}/>)}
+            </div>}
         </div>
     )
 }
