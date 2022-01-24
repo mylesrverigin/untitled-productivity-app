@@ -70,7 +70,6 @@ router.put('/', async (req, res) => {
         updatedGoal.subgoal = new mongodb_1.ObjectId(updatedGoal.subgoal);
     }
     const serverResponse = await GoalCollection.update(updatedGoal);
-    console.log(serverResponse);
     if (!serverResponse.status) {
         return res.status(403).json(serverResponse);
     }

@@ -17,7 +17,8 @@ export interface goalDetails {
     maxProgress:number,
     subgoal?:string,
     subhabit?:string,
-    nested?:goalDetails[]
+    nested?:goalDetails[],
+    updateParent?:Function
 }
 
 const getWidthPercentage = (a:number,b:number) => {
@@ -26,7 +27,8 @@ const getWidthPercentage = (a:number,b:number) => {
 }
 
 const normalizeDates = (start:number,end:number) => {
-    if (start > end){ return getWidthPercentage(1,1)}
+    if (start > end) return getWidthPercentage(1,1)
+    if (Date.now() < start) return getWidthPercentage(0,1);
 
     const totalInterval = end - start;
     const currentInterval = end - Date.now();
@@ -34,8 +36,29 @@ const normalizeDates = (start:number,end:number) => {
     return getWidthPercentage((totalInterval-currentInterval),totalInterval);
 }
 
-const doDelete = (goal:Record<string,any>) => {
-    deleteGoal(goal);
+const doDelete = async (goal:Record<string,any>) => {
+    await deleteGoal(goal);
+    console.log('delete server done')
+}
+
+const handleChildUpdate = (dataUpdate:Record<string,any>,currentState:goalDetails,setState:Function) => {
+    // todo make this handle more then ints
+    let updateKeys = Object.keys(dataUpdate);
+    let afterUpdateRecord:Record<string,any> = {...currentState};
+
+    updateKeys.forEach((key:string)=>{
+        if (key in currentState) {
+            let newVal = (currentState as any)[key]
+            newVal += dataUpdate[key]
+            afterUpdateRecord[key] = newVal;
+        }
+    })
+
+    if ('serverUpdate' in dataUpdate) {
+        afterUpdateRecord['serverUpdate'] = dataUpdate['serverUpdate']
+    }
+
+    setState(afterUpdateRecord);
 }
 
 export default function ProgressBar(goalInfo:goalDetails) {
@@ -43,12 +66,16 @@ export default function ProgressBar(goalInfo:goalDetails) {
     const {goalState,setGoalState} = useProgress(goalInfo);
     const [toggleSubGoal,setToggleSubGoal] = useState(true);
     const hasSubGoal = !!goalState.nested;
+    
+    const updateWrapperFunction = (update:Record<string,any>) => {
+        handleChildUpdate(update,goalState,setGoalState);
+    }
 
     const formCallout = async (data:Record<string,any>) => {
         data['parentGoal'] = goalState._id;
         const serverResponse = await createGoal(data);
         if (serverResponse.status && serverResponse.data.length > 0) {
-            // setGoalState or refresh page
+            updateWrapperFunction({'serverUpdate':'create'});
         }
     }
 
@@ -59,10 +86,14 @@ export default function ProgressBar(goalInfo:goalDetails) {
             <p className='heading'> {goalState.name} </p>
             <p className='bar-heading'> Progress</p>
             <div className='edit-button'>
-                <button onClick={()=>{doDelete(goalState)}}>delete</button>
-                <button onClick={()=>{setGoalState({progress:goalState.progress-1})}}>-</button>
+                {!hasSubGoal && <button onClick={async ()=>{
+                    await doDelete(goalState)
+                    console.log('delete done')
+                    updateWrapperFunction({serverUpdate:'delete'})
+                    }}>delete</button>}
+                {!hasSubGoal && <button onClick={()=>{setGoalState({progress:goalState.progress-1})}}>-</button>}
                 <p> {goalState.progress}/{goalState.maxProgress} </p>
-                <button onClick={()=>{setGoalState({progress:goalState.progress+1})}}>+</button>
+                {!hasSubGoal && <button onClick={()=>{setGoalState({progress:goalState.progress+1})}}>+</button>}
             </div>
             <div className='bar-progress'>
                 <div className='progress' 
@@ -80,7 +111,7 @@ export default function ProgressBar(goalInfo:goalDetails) {
             </div>
             {hasSubGoal && <div className='sub-goal-display'>
                 <button onClick={e=>setToggleSubGoal(c=>!c)}>{toggleSubGoal? 'Hide':'Show'}</button>
-                {toggleSubGoal && goalState.nested?.map((el:goalDetails)=><ProgressBar {...el}/>)}
+                {toggleSubGoal && goalState.nested?.map((el:goalDetails)=><ProgressBar key={el._id} {...el}{...{updateParent:updateWrapperFunction}}/>)}
             </div>}
         </div>
     )

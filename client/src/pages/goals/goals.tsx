@@ -39,22 +39,35 @@ const refreshGoals = async (stateUpdate:Function) => {
     if (serverResponse.status && serverResponse.data.length > 0) {
         let nestedGoals = nestData(serverResponse.data);
         stateUpdate(nestedGoals);
+        console.log('ran refresh',serverResponse)
     }
 }
 
+
 export default function Goals() {
     const [showForm,setShowForm] = useState(false);
+    const [hideGoals,setHideGoals] = useState(false);
 
     const [goalArr, setGoalArr] = useState([]);
     useEffect(()=>{
         refreshGoals(setGoalArr)
     },[])
 
+    
+    const topLevelUpdateFunction = async (data:Record<string,any>) => {
+        console.log('top level recieved Update',data);
+        if ('serverUpdate' in data) {
+            setHideGoals(true);
+            await refreshGoals(setGoalArr);
+            setHideGoals(false);
+        }
+    }
+
     return (
         <div>
             <button onClick={e=>setShowForm(c=>!c)}> {showForm? 'Cancel':'Create'}</button>
             { showForm && <InputForm {...createGoalFormProps('base')}/>}
-            {goalArr.map((goal:goalDetails)=> <ProgressBar {...goal}/>)}
+            {!hideGoals && goalArr.map((goal:goalDetails)=> <ProgressBar {...goal} {...{updateParent:topLevelUpdateFunction}}/>)}
         </div>
     )
 }

@@ -7,10 +7,12 @@ export const extractFormData = (className:string) => {
     formInputs.forEach((el:any)=>{
         if (el.type !== 'button') {
             let value = el.value
-            if (el.type === 'number') {
-                value = parseInt(value);
+            if (value !== '') {
+                if (el.type === 'number') {
+                    value = parseInt(value);
+                }
+                formData[el.name] = value;
             }
-            formData[el.name] = value;
         }
     })
     formCheckboxes.forEach((el:any)=>{

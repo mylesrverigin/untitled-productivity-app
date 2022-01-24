@@ -77,7 +77,6 @@ router.put('/',async (req:any,res:any)=>{
         updatedGoal.subgoal = new ObjectId(updatedGoal.subgoal);
     }
     const serverResponse:databaseResponse = await GoalCollection.update(updatedGoal);
-    console.log(serverResponse);
     if (!serverResponse.status) {
         return res.status(403).json(serverResponse);
     }
