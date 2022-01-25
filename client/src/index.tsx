@@ -12,7 +12,11 @@ import Tasks from './pages/tasks/tasks';
 
 import env from "react-dotenv";
 import { updateVarMap } from './utils/envVars';
-updateVarMap('BASE_URL',env.BASE_URL);
+if (window.location.href === 'http://10.0.0.2:8080') {
+  updateVarMap('BASE_URL','http://10.0.0.2:8081')
+}else {
+  updateVarMap('BASE_URL',env.BASE_URL);
+}
 
 ReactDOM.render(
   <React.StrictMode>
