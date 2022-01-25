@@ -13,4 +13,8 @@ router.put('/',(req:any,res:any)=>{
     res.status(200).json('put works')
 })
 
+router.delete('/:id',async (req:any,res:any)=>{
+    res.status(200).json('delete works');
+})
+
 export = router;

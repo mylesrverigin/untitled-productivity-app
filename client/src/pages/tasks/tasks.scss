@@ -1,0 +1,24 @@
+@import '../../style/mixins/mixins.scss';
+
+.tasks {
+    display: flex;
+    flex-direction: column;
+
+    & .show-form {
+        @include button
+    }
+
+    & .task {
+        display: flex;
+        align-items: baseline;
+        padding: 0.5rem;
+
+        p {
+            padding: 0 1rem;
+        }
+    }
+}
+
+.task-complete {
+    background-color: green;
+}

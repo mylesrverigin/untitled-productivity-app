@@ -10,4 +10,7 @@ router.post('/', (req, res) => {
 router.put('/', (req, res) => {
     res.status(200).json('put works');
 });
+router.delete('/:id', async (req, res) => {
+    res.status(200).json('delete works');
+});
 module.exports = router;

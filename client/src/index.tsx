@@ -8,6 +8,7 @@ import Signup from "./pages/signup/signup";
 import Login from "./pages/login/login";
 import Navbar from './components/navbar/navbar';
 import Goals from './pages/goals/goals';
+import Tasks from './pages/tasks/tasks';
 
 import env from "react-dotenv";
 import { updateVarMap } from './utils/envVars';
@@ -23,6 +24,7 @@ ReactDOM.render(
           <Route path="/login" element={<Login/>}/>
           <Route path="/signup" element={<Signup/>}/>
           <Route path='/goal' element={<Goals/>} />
+          <Route path='/task' element={<Tasks/>} />
           <Route path="*" element={<Error/>}/>
         </Routes>
       </BrowserRouter>

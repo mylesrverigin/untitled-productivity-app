@@ -10,6 +10,7 @@ export default function navbar() {
                 <Link to='/login' className="link">login</Link>
                 <Link to='/signup' className="link">signup</Link>
                 <Link to='/goal' className="link">goal</Link>
+                <Link to='/task' className="link">tasks</Link>
             </div>
         </div>
     )
